@@ -50,22 +50,21 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>7C1912D4C9709519363769493BA2F973E1111686</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>KantanDocGen_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
-  </PropertyGroup>
+  <!-- <PropertyGroup> -->
+  <!-- <ManifestCertificateThumbprint>7C1912D4C9709519363769493BA2F973E1111686</ManifestCertificateThumbprint> -->
+  <!-- </PropertyGroup> -->
+  <!-- <PropertyGroup> -->
+  <!-- <ManifestKeyFile>KantanDocGen_TemporaryKey.pfx</ManifestKeyFile> -->
+  <!-- </PropertyGroup> -->
+  <!-- <PropertyGroup> -->
+  <!-- <GenerateManifests>true</GenerateManifests> -->
+  <!-- </PropertyGroup> -->
+  <!-- <PropertyGroup> -->
+  <!-- <SignManifests>true</SignManifests> -->
+  <!-- </PropertyGroup> -->
   <ItemGroup>
-    <Reference Include="saxon9he-api, Version=9.7.0.6, Culture=neutral, PublicKeyToken=e1fdd002d5083fe6, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\packages\Saxon-HE.9.7.0.6\lib\net40\saxon9he-api.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="saxon9he-api, Version=9.9.1.7, Culture=neutral, PublicKeyToken=e1fdd002d5083fe6, processorArchitecture=MSIL">
+      <HintPath>packages\Saxon-HE.9.9.1.7\lib\net40\saxon9he-api.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -95,6 +94,14 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DeploymentFiles\css\bpdoc.css" />
+    <Content Include="DeploymentFiles\xslt\class_docs_xform.xsl">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="DeploymentFiles\xslt\index_xform.xsl" />
+    <Content Include="DeploymentFiles\xslt\node_docs_xform.xsl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -11,6 +11,9 @@ using System.IO;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
+using System.Xml;
+using System.Runtime.CompilerServices;
+using System.Xml.XPath;
 
 namespace KantanDocGen
 {
@@ -102,6 +105,7 @@ namespace KantanDocGen
 
 		// @NOTE: Currently unused, seemingly no way to use Slate for the node rendering when running commandlet.
 		// Instead this tool is now invoked by a plugin.
+
 		static bool RunXmlDocGenCommandlet(string EngineDir, string EditorPath, string OutputDir)
 		{
 			// Create the output directory
@@ -144,6 +148,7 @@ namespace KantanDocGen
 			return true;
 		}
 
+		[MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
 		static void Main(string[] args)
 		{
 			List<string> ArgumentList = new List<string>(args);
@@ -155,7 +160,8 @@ namespace KantanDocGen
 			}
 
 			string DocsTitle = ParseArgumentValue(ArgumentList, "-name=", null);
-			if(DocsTitle == null)
+			DocsTitle = "HubrisVR";
+			if (DocsTitle == null)
 			{
 				Console.WriteLine("KantanDocGen: Error: Documentation title (-name=) required. Aborting.");
 				return;
@@ -171,9 +177,17 @@ namespace KantanDocGen
 			//string MsxslPath = ParseArgumentPath(ArgumentList, "-xslproc=", Path.Combine(EngineDir, "Binaries/ThirdParty/Msxsl/msxsl.exe"));
 
 			// Xsl transform files - if not specified explicitly, look for defaults relative to base directory
+			//This is for deployment
+			/*
 			string IndexTransformPath = ParseArgumentPath(ArgumentList, "-indexxsl=", Path.Combine(DocGenBaseDir, "xslt/index_xform.xsl"));
 			string ClassTransformPath = ParseArgumentPath(ArgumentList, "-classxsl=", Path.Combine(DocGenBaseDir, "xslt/class_docs_xform.xsl"));
 			string NodeTransformPath = ParseArgumentPath(ArgumentList, "-nodexsl=", Path.Combine(DocGenBaseDir, "xslt/node_docs_xform.xsl"));
+			*/
+			//this is for debuging
+			string IndexTransformPath = ParseArgumentPath(ArgumentList, "-indexxsl=", Path.Combine(DocGenBaseDir, "DeploymentFiles/xslt/index_xform.xsl"));
+			string ClassTransformPath = ParseArgumentPath(ArgumentList, "-classxsl=", Path.Combine(DocGenBaseDir, "DeploymentFiles/xslt/class_docs_xform.xsl"));
+			string NodeTransformPath = ParseArgumentPath(ArgumentList, "-nodexsl=", Path.Combine(DocGenBaseDir, "DeploymentFiles/xslt/node_docs_xform.xsl"));
+
 
 			bool bFromIntermediate = ArgumentList.Contains("-fromintermediate");
 			string IntermediateDir;
@@ -187,7 +201,7 @@ namespace KantanDocGen
 					return;
 				}
 
-				if(!Directory.Exists(IntermediateDir))
+				if (!Directory.Exists(IntermediateDir))
 				{
 					Console.WriteLine("KantanDocGen: Error: Specified intermediate directory not found. Aborting.");
 					return;
@@ -197,19 +211,21 @@ namespace KantanDocGen
 			{
 				// @TODO: This doesn't work, since commandlet cannot create Slate windows!
 				// Can reenable this path if manage to get a Program target type to build against the engine.
-				Console.WriteLine("KantanDocGen: Error: Calling without -fromintermediate currently not supported. Use the KantanDocGen engine plugin to generate documentation.");
-				return;
+				IntermediateDir = "C:\\Repositries\\KantanDocGenTool\\Intermediate\\HubrisVR";
+				Console.WriteLine("KantanDocGen: creating from debug location, make sure to include the proper directory if creating in project");
+				//return;
 
-/*				IntermediateDir = ParseArgumentDirectory(ArgumentList, "-intermediatedir=", Path.Combine(EngineDir, "Intermediate\\KantanDocGen"));
+				/*				IntermediateDir = ParseArgumentDirectory(ArgumentList, "-intermediatedir=", Path.Combine(EngineDir, "Intermediate\\KantanDocGen"));
 
-				// Need to generate intermediate docs first
-				// Run editor commandlet to generate XML and image files
-				string EditorPath = Path.Combine(EngineDir, "Binaries\\Win64\\UE4Editor-Cmd.exe");
-				if (!RunXmlDocGenCommandlet(EngineDir, EditorPath, IntermediateDir))
-				{
-					return;
-				}
-*/			}
+								// Need to generate intermediate docs first
+								// Run editor commandlet to generate XML and image files
+								string EditorPath = Path.Combine(EngineDir, "Binaries\\Win64\\UE4Editor-Cmd.exe");
+								if (!RunXmlDocGenCommandlet(EngineDir, EditorPath, IntermediateDir))
+								{
+									return;
+								}
+				*/
+			}
 
 			const bool bCleanOutput = true;
 			bool bHardClean = ArgumentList.Contains("-cleanoutput");
@@ -220,9 +236,9 @@ namespace KantanDocGen
 				{
 					try
 					{
-						Directory.Delete(OutputDir, bHardClean);
+						Directory.Delete(OutputDir, true);
 					}
-					catch(Exception)
+					catch (Exception)
 					{
 						Console.WriteLine("KantanDocGen: Error: Output directory '{0}' exists and not empty/couldn't delete. Remove and rerun, or specify -cleanoutput (If running from plugin console, add 'clean' parameter).", OutputDir);
 						return;
@@ -263,40 +279,61 @@ namespace KantanDocGen
 				string OutputClassDir = Path.Combine(OutputDir, ClassTitle);
 				SafeCreateDirectory(OutputClassDir);
 				string NodeDir = Path.Combine(Sub, "nodes");
+
+
+
 				if (Directory.Exists(NodeDir))
 				{
 					string OutputNodesDir = Path.Combine(OutputClassDir, "nodes");
 					SafeCreateDirectory(OutputNodesDir);
 
+					XmlDocument doc = new XmlDocument();
+					doc.Load(Path.Combine(Sub, ClassTitle + ".xml"));
+					XmlElement root = doc.DocumentElement;
+					XmlNode nodesNode = root.SelectSingleNode("descendant::nodes");
+
+					root.RemoveChild(root.LastChild);
+
+					XmlElement functionListElement = doc.CreateElement("FunctionList");
+
 					var InputFiles = Directory.EnumerateFiles(NodeDir, "*.xml", SearchOption.TopDirectoryOnly);
+
 					foreach (string FilePath in InputFiles)
 					{
-						string FileTitle = Path.GetFileNameWithoutExtension(FilePath);
-						string OutputPath = Path.Combine(OutputNodesDir, FileTitle + ".html");
+						XmlElement functionRoot = doc.CreateElement("Function");
 
-						string InputPath = FilePath;
-						if (!NodeXform.TransformXml(InputPath, OutputPath))
+						XmlDocument functionDoc = new XmlDocument();
+						functionDoc.Load(FilePath);
+
+						foreach (XmlNode childElement in functionDoc.DocumentElement.ChildNodes)
 						{
-							Console.WriteLine("Error: Xsl transform failed for file {0} - skipping.", InputPath);
-							++Failed;
-							continue;
+							//XmlNode nodeCopy = childElement.CloneNode(true);				
+							XmlNode nodeCopy = doc.ImportNode(childElement, true);
+							functionRoot.AppendChild(nodeCopy);
 						}
-
+						doc.ImportNode(functionRoot, true);
+						functionListElement.AppendChild(functionRoot);
 						++Success;
+						//doc.Save(Console.Out);
 					}
-
+					//Console.WriteLine(" -- appending new element list -- ");
+					//Console.Write(functionListElement.OuterXml);
+					root.AppendChild(functionListElement);
+					//doc.Save(Console.Out);
+					doc.Save(Path.Combine(Sub, ClassTitle + ".xml"));
 					string OutputClassPath = Path.Combine(OutputClassDir, ClassTitle + ".html");
 					ClassXform.TransformXml(Path.Combine(Sub, ClassTitle + ".xml"), OutputClassPath);
 				}
 
-				// Copy the images for this class to the output directory
+				//Copy the images for this class to the output directory
+
 				CopyWholeDirectory(Path.Combine(Sub, "img"), Path.Combine(OutputClassDir, "img"));
 			}
 
 			string OutputIndexPath = Path.Combine(OutputDir, "index.html");
 			IndexXform.TransformXml(Path.Combine(IntermediateDir, "index.xml"), OutputIndexPath);
 
-			CopyWholeDirectory(Path.Combine(DocGenBaseDir, "css"), Path.Combine(OutputDir, "css"));
+			CopyWholeDirectory(Path.Combine(DocGenBaseDir, "DeploymentFiles/css"), Path.Combine(OutputDir, "css"));
 
 			Console.WriteLine("KantanDocGen completed:");
 			Console.WriteLine("{0} node docs successfully transformed.", Success);
