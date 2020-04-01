@@ -45,6 +45,7 @@ namespace KantanDocGen
 				{
 					CompiledXform.SetInputStream(inputStream, new Uri(input.DirectoryName));
 					CompiledXform.Run(destination);
+				
 				}
 			}
 			catch(Exception Ex)

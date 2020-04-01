@@ -44,7 +44,7 @@ version="2.0">
         </div>
         <h2>
           Todo here is the function header explanation
-          <xsl:value-of select="short_tooltip" />
+          <xsl:value-of select="description" />
         </h2>
       </div>
     </div>  

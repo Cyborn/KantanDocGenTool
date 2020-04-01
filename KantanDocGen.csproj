@@ -100,8 +100,12 @@
     <Content Include="DeploymentFiles\xslt\class_docs_xform.xsl">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="DeploymentFiles\xslt\index_xform.xsl" />
-    <Content Include="DeploymentFiles\xslt\node_docs_xform.xsl" />
+    <Content Include="DeploymentFiles\xslt\index_xform.xsl">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="DeploymentFiles\xslt\node_docs_xform.xsl">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
