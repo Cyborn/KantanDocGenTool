@@ -17,6 +17,13 @@ using System.Xml.XPath;
 
 namespace KantanDocGen
 {
+    struct classStructure
+    {
+        public string savegame { get; set; }
+        public string refactor { get; set; }
+        public string short_tooltip { get; set; }
+        public string native { get; set; }
+    }
     class Program
     {
 
@@ -149,7 +156,7 @@ namespace KantanDocGen
             return true;
         }
 
-        static bool IsDebug = false;
+        static bool IsDebug = true;
 
 
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
@@ -279,6 +286,9 @@ namespace KantanDocGen
             // Loop over all generated xml files and apply the transformation
             int Success = 0;
             int Failed = 0;
+
+            Dictionary<string, classStructure> ClassStructureDictionary = new Dictionary<string, classStructure>();
+
             // @TODO: Should iterate over index/class xml entries rather than enumerate files and directories
             var SubFolders = Directory.EnumerateDirectories(IntermediateDir);
             foreach (string Sub in SubFolders)
@@ -298,7 +308,7 @@ namespace KantanDocGen
                     XmlDocument doc = new XmlDocument();
                     doc.Load(Path.Combine(Sub, ClassTitle + ".xml"));
                     XmlElement root = doc.DocumentElement;
-                    XmlNode nodesNode = root.SelectSingleNode("descendant::nodes");
+                    //XmlNode nodesNode = root.SelectSingleNode("descendant::nodes");
 
                     root.RemoveChild(root.LastChild);
 
@@ -321,13 +331,24 @@ namespace KantanDocGen
                         }
                         doc.ImportNode(functionRoot, true);
                         functionListElement.AppendChild(functionRoot);
+
                         ++Success;
                         //doc.Save(Console.Out);
                     }
-                    //Console.WriteLine(" -- appending new element list -- ");
-                    //Console.Write(functionListElement.OuterXml);
+
                     root.AppendChild(functionListElement);
-                    //doc.Save(Console.Out);
+
+
+                    var thisStruct = new classStructure
+                    {
+                        savegame = doc.DocumentElement["savegame"].InnerText,
+                        refactor = doc.DocumentElement["refactor"].InnerText,
+                        short_tooltip = doc.DocumentElement["short_tooltip"].InnerText,
+                        native = doc.DocumentElement["native"].InnerText
+                    };
+
+                    ClassStructureDictionary[ClassTitle] = thisStruct;
+
                     doc.Save(Path.Combine(Sub, ClassTitle + ".xml"));
                     string OutputClassPath = Path.Combine(OutputClassDir, ClassTitle + ".html");
                     ClassXform.TransformXml(Path.Combine(Sub, ClassTitle + ".xml"), OutputClassPath);
@@ -338,8 +359,40 @@ namespace KantanDocGen
                 CopyWholeDirectory(Path.Combine(Sub, "img"), Path.Combine(OutputClassDir, "img"));
             }
 
+
+            XmlDocument indexXMLDoc = new XmlDocument();
+            indexXMLDoc.Load(Path.Combine(IntermediateDir, "index.xml"));
+            XmlElement indexRoot = indexXMLDoc.DocumentElement;
+
+            foreach (XmlNode item in indexRoot.GetElementsByTagName("class"))
+            {
+                var saveGame = indexXMLDoc.CreateElement("savegame");
+                saveGame.InnerText = ClassStructureDictionary[item["id"].InnerText].savegame;
+                item.AppendChild(saveGame);
+
+                var refactor = indexXMLDoc.CreateElement("refactor");
+                refactor.InnerText = ClassStructureDictionary[item["id"].InnerText].refactor;
+                item.AppendChild(refactor);
+
+                var shortTooltip = indexXMLDoc.CreateElement("short_tooltip");
+                shortTooltip.InnerText = ClassStructureDictionary[item["id"].InnerText].short_tooltip;
+                item.AppendChild(shortTooltip);
+
+                var native = indexXMLDoc.CreateElement("native");
+                native.InnerText = ClassStructureDictionary[item["id"].InnerText].native;
+                item.AppendChild(native);
+
+
+                //Console.WriteLine(item.InnerText);
+            }
+
+            indexXMLDoc.Save(Path.Combine(IntermediateDir, "index_adjusted.xml"));
+
             string OutputIndexPath = Path.Combine(OutputDir, "index.html");
-            IndexXform.TransformXml(Path.Combine(IntermediateDir, "index.xml"), OutputIndexPath);
+
+            //todo update the entire index XML with the required information we need of the classes (Refactor, )
+
+            IndexXform.TransformXml(Path.Combine(IntermediateDir, "index_adjusted.xml"), OutputIndexPath);
 
 
             //debug
@@ -350,7 +403,7 @@ namespace KantanDocGen
                 CopyWholeDirectory(Path.Combine(DocGenBaseDir, "DeploymentFiles/img"), Path.Combine(OutputDir, "img"));
             }
             else
-            { 
+            {
                 CopyWholeDirectory(Path.Combine(DocGenBaseDir, "img"), Path.Combine(OutputDir, "img"));
                 CopyWholeDirectory(Path.Combine(DocGenBaseDir, "css"), Path.Combine(OutputDir, "css"));
             }

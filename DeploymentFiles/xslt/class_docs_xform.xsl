@@ -17,9 +17,8 @@ version="2.0">
         <link rel="stylesheet" type="text/css" href="../css/bpdoc.css" />
       </head>
       <body>
-        <div id="content_container">
-          <xsl:apply-templates select="/root" />
-        </div>
+        <xsl:apply-templates select="/root" />
+
       </body>
     </html>
   </xsl:template>
@@ -40,6 +39,7 @@ version="2.0">
         <div id="pageTitle">
           <h1 id="H1TitleId">
             <xsl:value-of select="display_name" />
+            <!--ICON CELL Saveable-->
           </h1>
         </div>
         <h2>
@@ -48,33 +48,86 @@ version="2.0">
       </div>
     </div>
 
-    <div class="heading expanded" onclick="sectionOnClick(this, 'hierarchy');">
-      <p>Inheritance Hierarchy</p>
+    <div id="maincol" style="width: calc(100% - 60px); padding-bottom: 100px;">
 
+
+      <xsl:if test="savegame='ready'">
+        <img src="../img/saveable_ready.png" alt="Saveable Ready" title="Saveable Ready"/>
+      </xsl:if>
+      <xsl:if test="savegame='todo'">
+        <img src="../img/saveable_todo.png" alt="Saveable Todo" title="Saveable Todo"/>
+      </xsl:if>
+      <xsl:if test="savegame='none'">
+        <img src="../img/saveable_none.png" alt="Saveable Not needed" title="Saveable Not needed"/>
+      </xsl:if>
+
+
+      <!--ICON CELL Refactor-->
+
+      <xsl:if test="refactor='ready'">
+        <img src="../img/refactor_ready.png" alt="Public Variable" title="Refactor Ready"/>
+      </xsl:if>
+      <xsl:if test="refactor='todo'">
+        <img src="../img/refactor_todo.png" alt="Protected Variable" title="Refactor Todo"/>
+      </xsl:if>
+      <xsl:if test="refactor='none'">
+        <img src="../img/refactor_none.png" alt="Private Variable" title="Refactor Not Needed"/>
+      </xsl:if>
+
+      <div class="heading expanded" onclick="sectionOnClick(this, 'references');">
+        <p>References</p>
+      </div>
+
+      <div id="references">
+        <div class="member-list">
+          <table cellspacing="0">
+            <tbody>
+              <tr class="normal-row">
+                <td class="name-cell">
+                  <p>Location</p>
+                </td>
+                <td class="desc-cell">
+                  <p>
+                    <xsl:value-of select="path"/>
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+
+      <div class="heading expanded" onclick="sectionOnClick(this, 'hierarchy');">
+        <p>Inheritance Hierarchy</p>
+
+      </div>
+
+      <div id="hierarchy">
+        <xsl:apply-templates select="hierarchy" />
+      </div>
+
+      <div class="heading expanded" onclick="sectionOnClick(this, 'description');">
+        <p>Remarks</p>
+      </div>
+
+      <div id="description" style="">
+        <p>
+          <xsl:value-of select="description"/>
+        </p>
+      </div>
+
+      <xsl:apply-templates select="FunctionList" />
     </div>
 
-    <div id="hierarchy">
-      <xsl:apply-templates select="hierarchy" />
-    </div>
-
-    <div class="heading expanded" onclick="sectionOnClick(this, 'description');">
-      <p>Remarks</p>
-    </div>
-
-    <div id="description" style="">
-      <p>
-        <xsl:value-of select="description"/>
-      </p>
-    </div>
-
-    <xsl:apply-templates select="FunctionList" />
   </xsl:template>
 
   <xsl:template match="hierarchy">
     <xsl:apply-templates select="parent" />
   </xsl:template>
 
-  
+
   <xsl:template match ="parent[parent]">
     <xsl:apply-templates select="parent" />
     <a style="font-size: 13px">
@@ -87,7 +140,9 @@ version="2.0">
   </xsl:template>
 
   <xsl:template match ="parent[not(parent)]">
-    <p style="font-size: 11px;"><xsl:apply-templates select="parent" /></p>
+    <p style="font-size: 11px;">
+      <xsl:apply-templates select="parent" />
+    </p>
     <xsl:value-of select="id"/>
     <br></br>
   </xsl:template>
@@ -122,6 +177,25 @@ version="2.0">
                     <xsl:if test="access_spec='Private'">
                       <img src="../img/api_variable_private.png" alt="Private Variable" title="Private Variable"/>
                     </xsl:if>
+
+                    <xsl:if test="static='True'">
+                      <img src="../img/api_function_static.png" alt="Static" title="Static"/>
+                    </xsl:if>
+
+                    <xsl:if test="const='True'">
+                      <img src="../img/api_function_const.png" alt="Const" title="Const"/>
+                    </xsl:if>
+
+                    <xsl:if test="edit_type='ReadWrite'">
+                      <img src="../img/blueprint_readwrite.png" alt="Blueprint Read Write Access" title="Blueprint Read Write Access"/>
+                    </xsl:if>
+                    <xsl:if test="edit_type='ReadOnly'">
+                      <img src="../img/blueprint_readonly.png" alt="Blueprint Read Only Access" title="Blueprint Read Only Access"/>
+                    </xsl:if>
+                    <xsl:if test="edit_type='None'">
+                      <img src="../img/blueprint_none.png" alt="No Blueprint Access" title="No Blueprint Access"/>
+                    </xsl:if>
+
                   </td>
                   <td class="name-cell" align="right">
                     <span class="type-span">
@@ -177,8 +251,18 @@ version="2.0">
                     <xsl:if test="access_spec='Private'">
                       <img src="../img/api_function_private.png" alt="Private Function" title="Private Function"/>
                     </xsl:if>
-                  </td>
 
+
+                    <xsl:if test="static='True'">
+                      <img src="../img/api_function_static.png" alt="Static" title="Static"/>
+                    </xsl:if>
+
+                    <xsl:if test="const='True'">
+                      <img src="../img/api_function_const.png" alt="Const" title="Const"/>
+                    </xsl:if>
+
+
+                  </td>
                   <!-- RETURN TYPE HERE-->
                   <td class="name-cell" align="right">
                     <span class="type-span">
