@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>stage\</PublishUrl>
+    <PublishUrl>C:\Users\Koen\Desktop\exportkantan\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -25,7 +25,8 @@
     <SupportUrl>http://kantandev.com</SupportUrl>
     <ProductName>Kantan Doc Gen Tool</ProductName>
     <PublisherName>Kantan Dev</PublisherName>
-    <ApplicationRevision>1</ApplicationRevision>
+    <AutorunEnabled>true</AutorunEnabled>
+    <ApplicationRevision>2</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -49,6 +50,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <!-- <PropertyGroup> -->
   <!-- <ManifestCertificateThumbprint>7C1912D4C9709519363769493BA2F973E1111686</ManifestCertificateThumbprint> -->
@@ -80,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="DeploymentFiles\Font\BrutalType-Regular %281%29.woff" />
     <None Include="KantanDocGen_TemporaryKey.pfx" />
     <None Include="packages.config" />
   </ItemGroup>
